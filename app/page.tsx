@@ -111,6 +111,34 @@ const extraServices: ServiceOption[] = [
   { id: "scalp-massage", name: "تدليك فروة الرأس", note: "جلسة هادئة لمدة 10 دقائق", price: "+ 90 ج.م", icon: Hand },
 ];
 
+const hairModelAssets: Record<string, string> = {
+  "classic-side": "/models/model-classic.png",
+  "french-crop": "/models/model-mid-fade.png",
+  "low-fade": "/models/model-mid-fade.png",
+  "mid-fade": "/models/model-mid-fade.png",
+  "high-fade": "/models/model-high-fade.png",
+  pompadour: "/models/model-pompadour.png",
+  "side-part": "/models/model-classic.png",
+  "modern-quiff": "/models/model-mid-fade.png",
+  "curly-top": "/models/model-curly.png",
+  undercut: "/models/model-high-fade.png",
+  caesar: "/models/model-high-fade.png",
+  "natural-medium": "/models/model-pompadour.png",
+};
+
+const beardModelAssets: Record<string, string> = {
+  clean: "/models/model-classic.png",
+  stubble: "/models/model-curly.png",
+  defined: "/models/model-mid-fade.png",
+  "short-boxed": "/models/model-mid-fade.png",
+  full: "/models/model-high-fade.png",
+  boxed: "/models/model-pompadour.png",
+  long: "/models/model-high-fade.png",
+  goatee: "/models/model-classic.png",
+  "beard-mustache": "/models/model-pompadour.png",
+  sculpted: "/models/model-high-fade.png",
+};
+
 export default function Home() {
   const [active, setActive] = useState("الرئيسية");
   const [hair, setHair] = useState(3);
@@ -123,6 +151,7 @@ export default function Home() {
   const [length, setLength] = useState(62);
   const [density, setDensity] = useState(52);
   const [applied, setApplied] = useState(false);
+  const [lastSelection, setLastSelection] = useState<"hair" | "beard">("hair");
 
   const selectedHair = hairStyles[hair];
   const selectedBeard = beardStyles[beard];
@@ -130,6 +159,7 @@ export default function Home() {
   const selectedColor = hairColors.find((item) => item.id === hairColor) ?? hairColors[1];
   const selectedServices = extraServices.filter((service) => services.includes(service.id));
   const score = 91 + ((hair + beard + services.length) % 5);
+  const selectedModel = (lastSelection === "beard" ? beardModelAssets[selectedBeard.id] : hairModelAssets[selectedHair.id]) ?? "/models/model-mid-fade.png";
 
   const applyLook = () => {
     setApplied(true);
@@ -166,9 +196,9 @@ export default function Home() {
         <div className="workspace-grid">
           <section className="hero-card glass-panel">
             <div className="hero-copy"><span className="section-kicker"><Sparkles size={14} /> توصية مخصصة</span><h2>جرّب قصات الشعر وأنماط الذقن<br /><span>على نموذجك ثلاثي الأبعاد</span></h2><p>اختَر قصتك، كثافة لحيتك، لون شعرك والخدمات الإضافية، ثم شاهد الإطلالة من كل زاوية قبل زيارة الحلاق.</p><div className="copy-divider" /><div className="hero-meta"><span><BadgeCheck size={15} /> تحليل ملامح الوجه</span><span><Gauge size={15} /> دقة التوصية {score}%</span></div></div>
-            <div className="model-stage"><div className="stage-glow" /><div className="stage-grid" /><div className={`model-cutout ${turn === 1 ? "turn-left" : turn === 2 ? "turn-right" : ""}`}><img src="/barber-reference.png" alt="نموذج رجل لمعاينة القصات" style={{ objectPosition: selectedHair.focus, filter: previewFilter }} /></div><div className="orbit orbit-one" /><div className="orbit orbit-two" /><div className="model-badge"><span className="live-dot" /> نموذجك الآن</div><div className="face-tag"><span>شكل الوجه</span><strong>بيضاوي</strong></div>
+            <div className="model-stage"><div className="stage-glow" /><div className="stage-grid" /><div className={`model-cutout ${turn === 1 ? "turn-left" : turn === 2 ? "turn-right" : ""}`}><img src={selectedModel} alt={`نموذج مولّد لمعاينة ${selectedHair.name} و${selectedBeard.name}`} style={{ filter: previewFilter }} /></div><div className="orbit orbit-one" /><div className="orbit orbit-two" /><div className="model-badge"><span className="live-dot" /> نموذج مولّد الآن</div><div className="face-tag"><span>شكل الوجه</span><strong>بيضاوي</strong></div>
               <div className="look-ribbon"><span><small>الشعر</small><strong>{selectedHair.name}</strong></span><i /><span><small>الدقن</small><strong>{selectedBeard.name}</strong></span><i /><span><small>اللون</small><strong className="ribbon-color"><b style={{ background: selectedColor.color }} />{selectedColor.name}</strong></span></div>
-              <div className="compare-card"><div className="compare-head"><span>مقارنة الإطلالة</span><button type="button" onClick={() => setCompare(!compare)} aria-label="تبديل المقارنة"><span className="blend-icon"><i /><i /></span></button></div><div className="compare-images"><div className="compare-image" style={{ backgroundPosition: selectedHair.position }}><span>قبل</span></div>{compare && <div className="compare-image after" style={{ backgroundPosition: selectedBeard.position, filter: previewFilter }}><span>بعد</span><b><Check size={12} /></b></div>}</div><span className="compare-label">{compare ? "قبل / بعد" : "معاينة واحدة"}</span></div>
+              <div className="compare-card"><div className="compare-head"><span>مقارنة الإطلالة</span><button type="button" onClick={() => setCompare(!compare)} aria-label="تبديل المقارنة"><span className="blend-icon"><i /><i /></span></button></div><div className="compare-images"><div className="compare-image"><img src="/models/model-classic.png" alt="الإطلالة الأصلية" /><span>قبل</span></div>{compare && <div className="compare-image after"><img src={selectedModel} alt="الإطلالة المختارة" style={{ filter: previewFilter }} /><span>بعد</span><b><Check size={12} /></b></div>}</div><span className="compare-label">{compare ? "قبل / بعد" : "معاينة واحدة"}</span></div>
               <div className="stage-controls"><button type="button" aria-label="تدوير إلى اليسار" onClick={() => setTurn(1)}><Rotate3d size={18} /></button><span><Move3d size={16} /> اسحب للتدوير</span><button type="button" aria-label="تدوير إلى اليمين" onClick={() => setTurn(2)}><Rotate3d size={18} /></button></div>
             </div>
             <div className="hero-footer"><span><Star size={15} fill="currentColor" /> {selectedServices.length ? `${selectedServices.length} خدمات مضافة إلى الإطلالة` : "الإطلالة الأكثر طلبًا هذا الأسبوع"}</span><button type="button" onClick={() => setCompare(!compare)}>{compare ? "إخفاء المقارنة" : "عرض المقارنة"}</button></div>
@@ -180,8 +210,8 @@ export default function Home() {
             <div className="selection-summary"><span className="selection-chip"><Scissors size={12} /> {selectedHair.name}</span><span className="selection-chip"><PersonStanding size={12} /> {selectedBeard.name}</span>{selectedServices.length > 0 && <span className="selection-chip"><Sparkles size={12} /> {selectedServices.length} خدمات</span>}</div><button className="apply-button" type="button" onClick={applyLook}>{applied ? <><Check size={20} /> تم تركيب الإطلالة</> : <><WandSparkles size={20} /> ركّب على النموذج</>}</button><span className="panel-note"><BadgeCheck size={14} /> يمكنك تعديل كل التفاصيل لاحقًا</span></aside>
         </div>
 
-        <StyleShelf title="قصات الشعر" kicker="تخصيص الإطلالة" icon={<Scissors size={14} />} items={hairStyles} selected={hair} onSelect={setHair} />
-        <StyleShelf title="أنماط الذقن" kicker="تفاصيل الوجه" icon={<PersonStanding size={14} />} items={beardStyles} selected={beard} onSelect={setBeard} beard />
+        <StyleShelf title="قصات الشعر" kicker="تخصيص الإطلالة" icon={<Scissors size={14} />} items={hairStyles} assets={hairModelAssets} selected={hair} onSelect={(index) => { setHair(index); setLastSelection("hair"); }} />
+        <StyleShelf title="أنماط الذقن" kicker="تفاصيل الوجه" icon={<PersonStanding size={14} />} items={beardStyles} assets={beardModelAssets} selected={beard} onSelect={(index) => { setBeard(index); setLastSelection("beard"); }} beard />
         <ServiceShelf selected={services} onToggle={toggleService} />
         <footer className="page-footer"><span>© 2026 باربر 3D</span><span>مصمم لعشّاق التفاصيل</span><span><BadgeCheck size={14} /> سجل اختياراتك محفوظ محليًا</span></footer>
       </div>
@@ -189,8 +219,8 @@ export default function Home() {
   );
 }
 
-function StyleShelf({ title, kicker, icon, items, selected, onSelect, beard = false }: { title: string; kicker: string; icon: React.ReactNode; items: readonly StyleOption[]; selected: number; onSelect: (index: number) => void; beard?: boolean }) {
-  return <section className={`style-section glass-panel ${beard ? "beard-section" : ""}`}><div className="style-heading"><div><span className="section-kicker">{icon} {kicker}</span><h2>{title}</h2></div><div className="style-tools"><span>{items.length} خيارات متاحة</span><button type="button" aria-label="عرض العناصر"><Grid2X2 size={17} /></button>{beard ? <button type="button" aria-label="أدوات اللحية"><Eraser size={17} /></button> : null}</div></div><div className={`style-grid ${beard ? "beard-grid" : ""}`}>{items.map((item, index) => <button className={`style-card ${selected === index ? "selected" : ""}`} type="button" key={item.id} onClick={() => onSelect(index)}><div className="style-visual" style={{ backgroundPosition: item.position }}><img src="/barber-reference.png" alt="" /><span className="style-check"><Check size={14} /></span></div><span>{item.name}</span><small>{selected === index ? "اختيارك الحالي" : `${item.category} · ${item.note}`}</small></button>)}</div></section>;
+function StyleShelf({ title, kicker, icon, items, assets, selected, onSelect, beard = false }: { title: string; kicker: string; icon: React.ReactNode; items: readonly StyleOption[]; assets: Record<string, string>; selected: number; onSelect: (index: number) => void; beard?: boolean }) {
+  return <section className={`style-section glass-panel ${beard ? "beard-section" : ""}`}><div className="style-heading"><div><span className="section-kicker">{icon} {kicker}</span><h2>{title}</h2></div><div className="style-tools"><span>{items.length} خيارات متاحة</span><button type="button" aria-label="عرض العناصر"><Grid2X2 size={17} /></button>{beard ? <button type="button" aria-label="أدوات اللحية"><Eraser size={17} /></button> : null}</div></div><div className={`style-grid ${beard ? "beard-grid" : ""}`}>{items.map((item, index) => <button className={`style-card ${selected === index ? "selected" : ""}`} type="button" key={item.id} onClick={() => onSelect(index)}><div className="style-visual"><img src={assets[item.id] ?? "/models/model-mid-fade.png"} alt={`نموذج ${item.name}`} /><span className="style-check"><Check size={14} /></span></div><span>{item.name}</span><small>{selected === index ? "اختيارك الحالي" : `${item.category} · ${item.note}`}</small></button>)}</div></section>;
 }
 
 function ServiceShelf({ selected, onToggle }: { selected: string[]; onToggle: (id: string) => void }) {
