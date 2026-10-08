@@ -4,9 +4,11 @@ import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
   BadgeCheck,
+  CalendarCheck,
   CalendarDays,
   Check,
   CircleHelp,
+  ClipboardCheck,
   Cuboid,
   Droplets,
   Eraser,
@@ -26,6 +28,8 @@ import {
   Star,
   WandSparkles,
 } from "lucide-react";
+
+type ScenarioId = "discover" | "style" | "care" | "booking";
 
 type StyleOption = {
   id: string;
@@ -59,6 +63,15 @@ const navigation = [
   ["تجربة ثلاثية الأبعاد", Cuboid],
   ["الإعدادات", Settings2],
 ] as const;
+
+const scenarioOrder: ScenarioId[] = ["discover", "style", "care", "booking"];
+
+const scenarioCopy: Record<ScenarioId, { label: string; caption: string; eyebrow: string; title: string; accent: string; heroTitle: string; heroAccent: string; description: string; cta: string; icon: LucideIcon }> = {
+  discover: { label: "الاستكشاف", caption: "حلّل ملامحك", eyebrow: "الخطوة 1 · الاستكشاف", title: "اكتشف إطلالتك", accent: "بذكاء", heroTitle: "دع الذكاء الاصطناعي", heroAccent: "يقترح ما يناسبك", description: "ابدأ بتحليل شكل الوجه ثم استكشف القصات والألوان التي تبرز ملامحك قبل اتخاذ القرار.", cta: "ابدأ تركيب الإطلالة", icon: Sparkles },
+  style: { label: "تركيب اللوك", caption: "اختر الشعر والذقن", eyebrow: "الخطوة 2 · تركيب اللوك", title: "ركّب اللوك", accent: "كما تتخيله", heroTitle: "غيّر كل تفصيلة", heroAccent: "وشاهدها فورًا", description: "اختر قصة الشعر، نمط الذقن، نوع الشعر ولونه، وستتبدل المعاينة المولّدة أمامك مباشرة.", cta: "اعتمد هذه الإطلالة", icon: Scissors },
+  care: { label: "باقة العناية", caption: "أضف اللمسات", eyebrow: "الخطوة 3 · باقة العناية", title: "أكمل تجربتك", accent: "بلمسات العناية", heroTitle: "أضف وقتًا", heroAccent: "للاسترخاء والعناية", description: "اختر الماسكات والفوطة الساخنة وتدليك فروة الرأس لتصل إلى تجربة متكاملة.", cta: "احفظ باقة العناية", icon: Droplets },
+  booking: { label: "التأكيد والحجز", caption: "احفظ موعدك", eyebrow: "الخطوة 4 · التأكيد والحجز", title: "إطلالتك جاهزة", accent: "للموعد القادم", heroTitle: "راجع اختياراتك", heroAccent: "ثم احجز بثقة", description: "راجع الشكل النهائي والخدمات المضافة، ثم أرسل تفاصيل الجلسة إلى الحلاق في خطوة واحدة.", cta: "تأكيد جلسة الحلاقة", icon: CalendarCheck },
+};
 
 const hairStyles: StyleOption[] = [
   { id: "classic-side", name: "كلاسيك جانبي", category: "كلاسيك", note: "مرتب لكل يوم", position: "7% 82%", focus: "52% 43%" },
@@ -139,8 +152,18 @@ const beardModelAssets: Record<string, string> = {
   sculpted: "/models/model-high-fade.png",
 };
 
+const hairColorAssets: Record<string, string> = {
+  black: "/models/color-black.png",
+  "dark-brown": "/models/model-mid-fade.png",
+  "warm-brown": "/models/color-warm-brown.png",
+  honey: "/models/color-honey.png",
+  ash: "/models/color-ash.png",
+  silver: "/models/color-silver.png",
+};
+
 export default function Home() {
   const [active, setActive] = useState("الرئيسية");
+  const [scenario, setScenario] = useState<ScenarioId>("discover");
   const [hair, setHair] = useState(3);
   const [beard, setBeard] = useState(2);
   const [hairType, setHairType] = useState("wavy");
@@ -151,7 +174,7 @@ export default function Home() {
   const [length, setLength] = useState(62);
   const [density, setDensity] = useState(52);
   const [applied, setApplied] = useState(false);
-  const [lastSelection, setLastSelection] = useState<"hair" | "beard">("hair");
+  const [lastSelection, setLastSelection] = useState<"hair" | "beard" | "color">("hair");
 
   const selectedHair = hairStyles[hair];
   const selectedBeard = beardStyles[beard];
@@ -159,7 +182,10 @@ export default function Home() {
   const selectedColor = hairColors.find((item) => item.id === hairColor) ?? hairColors[1];
   const selectedServices = extraServices.filter((service) => services.includes(service.id));
   const score = 91 + ((hair + beard + services.length) % 5);
-  const selectedModel = (lastSelection === "beard" ? beardModelAssets[selectedBeard.id] : hairModelAssets[selectedHair.id]) ?? "/models/model-mid-fade.png";
+  const selectedModel = (lastSelection === "color" ? hairColorAssets[selectedColor.id] : lastSelection === "beard" ? beardModelAssets[selectedBeard.id] : hairModelAssets[selectedHair.id]) ?? "/models/model-mid-fade.png";
+  const currentScenario = scenarioCopy[scenario];
+  const scenarioProgress = ((scenarioOrder.indexOf(scenario) + 1) / scenarioOrder.length) * 100;
+  const serviceTotal = selectedServices.length * 75;
 
   const applyLook = () => {
     setApplied(true);
@@ -191,11 +217,13 @@ export default function Home() {
       </aside>
 
       <div className="content-area">
-        <header className="topbar"><div><p className="eyebrow"><span className="status-dot" /> مساحة التصميم الشخصي</p><h1>اختيار ذكي <span>لإطلالتك القادمة</span></h1></div><div className="top-actions"><button className="ghost-action" type="button"><Eye size={17} /> معاينة كاملة</button><button className="avatar-button" type="button" aria-label="الملف الشخصي">م</button></div></header>
+        <header className="topbar"><div><p className="eyebrow"><span className="status-dot" /> {currentScenario.eyebrow}</p><h1>{currentScenario.title} <span>{currentScenario.accent}</span></h1></div><div className="top-actions"><button className="ghost-action" type="button" onClick={() => setScenario("booking")}><Eye size={17} /> معاينة كاملة</button><button className="avatar-button" type="button" aria-label="الملف الشخصي">م</button></div></header>
+
+        <ScenarioRail scenario={scenario} onChange={setScenario} progress={scenarioProgress} />
 
         <div className="workspace-grid">
           <section className="hero-card glass-panel">
-            <div className="hero-copy"><span className="section-kicker"><Sparkles size={14} /> توصية مخصصة</span><h2>جرّب قصات الشعر وأنماط الذقن<br /><span>على نموذجك ثلاثي الأبعاد</span></h2><p>اختَر قصتك، كثافة لحيتك، لون شعرك والخدمات الإضافية، ثم شاهد الإطلالة من كل زاوية قبل زيارة الحلاق.</p><div className="copy-divider" /><div className="hero-meta"><span><BadgeCheck size={15} /> تحليل ملامح الوجه</span><span><Gauge size={15} /> دقة التوصية {score}%</span></div></div>
+            <div className="hero-copy"><span className="section-kicker"><currentScenario.icon size={14} /> {scenario === "discover" ? "توصية مخصصة" : currentScenario.label}</span><h2>{currentScenario.heroTitle}<br /><span>{currentScenario.heroAccent}</span></h2><p>{currentScenario.description}</p><div className="copy-divider" /><div className="hero-meta"><span><BadgeCheck size={15} /> تحليل ملامح الوجه</span><span><Gauge size={15} /> دقة التوصية {score}%</span></div></div>
             <div className="model-stage"><div className="stage-glow" /><div className="stage-grid" /><div className={`model-cutout ${turn === 1 ? "turn-left" : turn === 2 ? "turn-right" : ""}`}><img src={selectedModel} alt={`نموذج مولّد لمعاينة ${selectedHair.name} و${selectedBeard.name}`} style={{ filter: previewFilter }} /></div><div className="orbit orbit-one" /><div className="orbit orbit-two" /><div className="model-badge"><span className="live-dot" /> نموذج مولّد الآن</div><div className="face-tag"><span>شكل الوجه</span><strong>بيضاوي</strong></div>
               <div className="look-ribbon"><span><small>الشعر</small><strong>{selectedHair.name}</strong></span><i /><span><small>الدقن</small><strong>{selectedBeard.name}</strong></span><i /><span><small>اللون</small><strong className="ribbon-color"><b style={{ background: selectedColor.color }} />{selectedColor.name}</strong></span></div>
               <div className="compare-card"><div className="compare-head"><span>مقارنة الإطلالة</span><button type="button" onClick={() => setCompare(!compare)} aria-label="تبديل المقارنة"><span className="blend-icon"><i /><i /></span></button></div><div className="compare-images"><div className="compare-image"><img src="/models/model-classic.png" alt="الإطلالة الأصلية" /><span>قبل</span></div>{compare && <div className="compare-image after"><img src={selectedModel} alt="الإطلالة المختارة" style={{ filter: previewFilter }} /><span>بعد</span><b><Check size={12} /></b></div>}</div><span className="compare-label">{compare ? "قبل / بعد" : "معاينة واحدة"}</span></div>
@@ -206,17 +234,28 @@ export default function Home() {
 
           <aside className="recommendation-card glass-panel"><div className="recommendation-heading"><div><span className="section-kicker"><Sparkles size={14} /> تحليل الذكاء الاصطناعي</span><h2>مناسب لشكل وجهك</h2></div><div className="score-ring"><strong>{score}%</strong><span>مناسب</span></div></div><div className="face-outline"><PersonStanding size={47} /><span>وجه بيضاوي</span></div><div className="check-list"><span><Check size={15} /> يبرز ملامح وجهك</span><span><Check size={15} /> متناسق مع {selectedBeard.name}</span><span><Check size={15} /> مظهر عصري ومتوازن</span></div><div className="panel-divider" />
             <label className="range-row"><span className="range-label"><span>طول الشعر</span><strong>{length < 40 ? "قصير" : length < 70 ? "متوسط" : "طويل"}</strong></span><input aria-label="طول الشعر" type="range" min="20" max="90" value={length} onChange={(event) => setLength(Number(event.target.value))} /></label><label className="range-row"><span className="range-label"><span>كثافة اللحية</span><strong>{density < 35 ? "خفيفة" : density < 70 ? "متوسطة" : "كاملة"}</strong></span><input aria-label="كثافة اللحية" type="range" min="10" max="90" value={density} onChange={(event) => setDensity(Number(event.target.value))} /></label>
-            <div className="mini-config"><div className="config-block"><div className="config-label"><span>نوع الشعر</span><small>{selectedType.name}</small></div><div className="choice-pills">{hairTypes.map((type) => <button key={type.id} className={`choice-pill ${hairType === type.id ? "selected" : ""}`} type="button" onClick={() => setHairType(type.id)}>{type.name}</button>)}</div></div><div className="config-block"><div className="config-label"><span>لون الشعر</span><small>{selectedColor.name}</small></div><div className="color-swatches">{hairColors.map((color) => <button key={color.id} className={`color-swatch ${hairColor === color.id ? "selected" : ""}`} type="button" title={color.name} aria-label={`اختيار لون ${color.name}`} onClick={() => setHairColor(color.id)}><span style={{ background: color.color }} /></button>)}</div></div></div>
-            <div className="selection-summary"><span className="selection-chip"><Scissors size={12} /> {selectedHair.name}</span><span className="selection-chip"><PersonStanding size={12} /> {selectedBeard.name}</span>{selectedServices.length > 0 && <span className="selection-chip"><Sparkles size={12} /> {selectedServices.length} خدمات</span>}</div><button className="apply-button" type="button" onClick={applyLook}>{applied ? <><Check size={20} /> تم تركيب الإطلالة</> : <><WandSparkles size={20} /> ركّب على النموذج</>}</button><span className="panel-note"><BadgeCheck size={14} /> يمكنك تعديل كل التفاصيل لاحقًا</span></aside>
+            <div className="mini-config"><div className="config-block"><div className="config-label"><span>نوع الشعر</span><small>{selectedType.name}</small></div><div className="choice-pills">{hairTypes.map((type) => <button key={type.id} className={`choice-pill ${hairType === type.id ? "selected" : ""}`} type="button" onClick={() => setHairType(type.id)}>{type.name}</button>)}</div></div><div className="config-block"><div className="config-label"><span>لون الشعر</span><small>{selectedColor.name}</small></div><div className="color-swatches">{hairColors.map((color) => <button key={color.id} className={`color-swatch ${hairColor === color.id ? "selected" : ""}`} type="button" title={color.name} aria-label={`اختيار لون ${color.name}`} onClick={() => { setHairColor(color.id); setLastSelection("color"); }}>{hairColors.length > 0 && <span style={{ background: color.color }} />}</button>)}</div></div></div>
+            <div className="selection-summary"><span className="selection-chip"><Scissors size={12} /> {selectedHair.name}</span><span className="selection-chip"><PersonStanding size={12} /> {selectedBeard.name}</span><span className="selection-chip"><span className="chip-dot" style={{ background: selectedColor.color }} /> {selectedColor.name}</span>{selectedServices.length > 0 && <span className="selection-chip"><Sparkles size={12} /> {selectedServices.length} خدمات</span>}</div><button className="apply-button" type="button" onClick={applyLook}>{applied ? <><Check size={20} /> تم حفظ السيناريو</> : <><WandSparkles size={20} /> {currentScenario.cta}</>}</button><span className="panel-note"><BadgeCheck size={14} /> يمكنك تعديل كل التفاصيل لاحقًا</span></aside>
         </div>
 
         <StyleShelf title="قصات الشعر" kicker="تخصيص الإطلالة" icon={<Scissors size={14} />} items={hairStyles} assets={hairModelAssets} selected={hair} onSelect={(index) => { setHair(index); setLastSelection("hair"); }} />
         <StyleShelf title="أنماط الذقن" kicker="تفاصيل الوجه" icon={<PersonStanding size={14} />} items={beardStyles} assets={beardModelAssets} selected={beard} onSelect={(index) => { setBeard(index); setLastSelection("beard"); }} beard />
         <ServiceShelf selected={services} onToggle={toggleService} />
+        <ScenarioSummary scenario={scenario} hair={selectedHair.name} beard={selectedBeard.name} color={selectedColor.name} services={selectedServices.length} total={serviceTotal} />
         <footer className="page-footer"><span>© 2026 باربر 3D</span><span>مصمم لعشّاق التفاصيل</span><span><BadgeCheck size={14} /> سجل اختياراتك محفوظ محليًا</span></footer>
       </div>
     </main>
   );
+}
+
+function ScenarioRail({ scenario, onChange, progress }: { scenario: ScenarioId; onChange: (value: ScenarioId) => void; progress: number }) {
+  return <section className="scenario-rail glass-panel"><div className="scenario-rail-head"><div><span className="section-kicker"><Sparkles size={14} /> مسار التجربة الذكية</span><strong>{scenarioCopy[scenario].label}</strong></div><span className="scenario-count">{scenarioOrder.indexOf(scenario) + 1} / {scenarioOrder.length}</span></div><div className="scenario-progress"><span style={{ width: `${progress}%` }} /></div><div className="scenario-steps">{scenarioOrder.map((id, index) => { const item = scenarioCopy[id]; const Icon = item.icon; return <button key={id} type="button" className={`scenario-step ${scenario === id ? "active" : ""} ${scenarioOrder.indexOf(scenario) > index ? "done" : ""}`} onClick={() => onChange(id)} aria-current={scenario === id ? "step" : undefined}><span className="scenario-icon"><Icon size={16} /></span><span><strong>{item.label}</strong><small>{item.caption}</small></span>{scenarioOrder.indexOf(scenario) > index && <Check size={14} className="scenario-done" />}</button>; })}</div></section>;
+}
+
+function ScenarioSummary({ scenario, hair, beard, color, services, total }: { scenario: ScenarioId; hair: string; beard: string; color: string; services: number; total: number }) {
+  const item = scenarioCopy[scenario];
+  const Icon = item.icon;
+  return <section className="scenario-summary glass-panel"><div className="scenario-summary-icon"><Icon size={20} /></div><div className="scenario-summary-copy"><span className="section-kicker">{item.label}</span><h2>{scenario === "booking" ? "كل التفاصيل جاهزة للحجز" : scenario === "care" ? "باقة العناية المقترحة" : "ملخص الإطلالة الحالية"}</h2><p><strong>{hair}</strong> · <strong>{beard}</strong> · لون <strong>{color}</strong> · {services ? `${services} خدمات إضافية` : "بدون خدمات إضافية"}</p></div><div className="scenario-summary-action">{scenario === "booking" ? <><small>إجمالي الخدمات</small><strong>{total || 0} ج.م</strong></> : <button type="button">الانتقال للخطوة التالية <WandSparkles size={15} /></button>}</div></section>;
 }
 
 function StyleShelf({ title, kicker, icon, items, assets, selected, onSelect, beard = false }: { title: string; kicker: string; icon: React.ReactNode; items: readonly StyleOption[]; assets: Record<string, string>; selected: number; onSelect: (index: number) => void; beard?: boolean }) {
