@@ -126,30 +126,30 @@ const extraServices: ServiceOption[] = [
 
 const hairModelAssets: Record<string, string> = {
   "classic-side": "/models/model-classic.png",
-  "french-crop": "/models/model-french-crop.png",
-  "low-fade": "/models/model-low-fade.png",
+  "french-crop": "/models/model-french-crop.webp",
+  "low-fade": "/models/model-low-fade.webp",
   "mid-fade": "/models/model-mid-fade.png",
   "high-fade": "/models/model-high-fade.png",
   pompadour: "/models/model-pompadour.png",
-  "side-part": "/models/model-side-part.png",
-  "modern-quiff": "/models/model-modern-quiff.png",
+  "side-part": "/models/model-side-part.webp",
+  "modern-quiff": "/models/model-modern-quiff.webp",
   "curly-top": "/models/model-curly.png",
-  undercut: "/models/model-undercut.png",
-  caesar: "/models/model-caesar.png",
-  "natural-medium": "/models/model-natural-medium.png",
+  undercut: "/models/model-undercut.webp",
+  caesar: "/models/model-caesar.webp",
+  "natural-medium": "/models/model-natural-medium.webp",
 };
 
 const beardModelAssets: Record<string, string> = {
-  clean: "/models/beard-clean.png",
-  stubble: "/models/beard-stubble.png",
-  defined: "/models/beard-defined.png",
-  "short-boxed": "/models/beard-short-boxed.png",
-  full: "/models/beard-full.png",
-  boxed: "/models/beard-boxed.png",
-  long: "/models/beard-long.png",
-  goatee: "/models/beard-goatee.png",
-  "beard-mustache": "/models/beard-mustache.png",
-  sculpted: "/models/beard-sculpted.png",
+  clean: "/models/beard-clean.webp",
+  stubble: "/models/beard-stubble.webp",
+  defined: "/models/beard-defined.webp",
+  "short-boxed": "/models/beard-short-boxed.webp",
+  full: "/models/beard-full.webp",
+  boxed: "/models/beard-boxed.webp",
+  long: "/models/beard-long.webp",
+  goatee: "/models/beard-goatee.webp",
+  "beard-mustache": "/models/beard-mustache.webp",
+  sculpted: "/models/beard-sculpted.webp",
 };
 
 const hairColorAssets: Record<string, string> = {
